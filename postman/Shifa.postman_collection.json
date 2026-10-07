@@ -1,0 +1,533 @@
+{
+  "info": {
+    "name": "Shifa API",
+    "description": "Shifa - appointment booking & clinic check-in REST API (MVP).\n\nSetup:\n1. Import this collection.\n2. Set the collection variables `baseUrl` (default http://localhost:4000/api/v1) and `accessToken`.\n3. Run Auth > Login for a role, copy `data.token` into `accessToken`, then run the folders in order.\n\nHappy path: Register/Login -> Doctors -> Book -> Pay (returns QR ticket) -> Check-in -> Queue.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:4000/api/v1" },
+    { "key": "accessToken", "value": "" }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [{ "key": "token", "value": "{{accessToken}}", "type": "string" }]
+  },
+  "item": [
+    {
+      "name": "System",
+      "item": [
+        {
+          "name": "Health",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/health", "host": ["{{baseUrl}}"], "path": ["health"] }
+          }
+        },
+        {
+          "name": "API index",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}", "host": ["{{baseUrl}}"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Register (patient)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Aya Mahmoud\",\n  \"email\": \"aya@patient.test\",\n  \"password\": \"Passw0rd!23\",\n  \"phone\": \"+20 100 123 4567\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/auth/register", "host": ["{{baseUrl}}"], "path": ["auth", "register"] }
+          }
+        },
+        {
+          "name": "Login (admin)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@shifa.test\",\n  \"password\": \"Passw0rd!23\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/auth/login", "host": ["{{baseUrl}}"], "path": ["auth", "login"] },
+            "event": [
+              {
+                "listen": "test",
+                "script": {
+                  "exec": [
+                    "const json = pm.response.json();",
+                    "if (json.data && json.data.token) pm.collectionVariables.set('accessToken', json.data.token);"
+                  ],
+                  "type": "text/javascript"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "name": "Login (doctor)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"omar.hassan@shifa.test\",\n  \"password\": \"Passw0rd!23\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/auth/login", "host": ["{{baseUrl}}"], "path": ["auth", "login"] },
+            "event": [
+              {
+                "listen": "test",
+                "script": {
+                  "exec": [
+                    "const json = pm.response.json();",
+                    "if (json.data && json.data.token) pm.collectionVariables.set('accessToken', json.data.token);"
+                  ],
+                  "type": "text/javascript"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "name": "Login (patient)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"ahmed@patient.test\",\n  \"password\": \"Passw0rd!23\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/auth/login", "host": ["{{baseUrl}}"], "path": ["auth", "login"] },
+            "event": [
+              {
+                "listen": "test",
+                "script": {
+                  "exec": [
+                    "const json = pm.response.json();",
+                    "if (json.data && json.data.token) pm.collectionVariables.set('accessToken', json.data.token);"
+                  ],
+                  "type": "text/javascript"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "name": "My profile",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/auth/me", "host": ["{{baseUrl}}"], "path": ["auth", "me"] }
+          }
+        },
+        {
+          "name": "Update profile / change password",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phone\": \"+20 122 999 0000\",\n  \"currentPassword\": \"Passw0rd!23\",\n  \"newPassword\": \"N3wPassw0rd!42\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/auth/me", "host": ["{{baseUrl}}"], "path": ["auth", "me"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Doctors & Clinics",
+      "item": [
+        {
+          "name": "List doctors",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/doctors", "host": ["{{baseUrl}}"], "path": ["doctors"] }
+          }
+        },
+        {
+          "name": "Specialties",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/doctors/specialties", "host": ["{{baseUrl}}"], "path": ["doctors", "specialties"] }
+          }
+        },
+        {
+          "name": "Doctor detail",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/doctors/:doctorId",
+              "host": ["{{baseUrl}}"],
+              "path": ["doctors", ":doctorId"],
+              "variable": [{ "key": "doctorId", "value": "" }]
+            }
+          }
+        },
+        {
+          "name": "Availability for a date",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/doctors/:doctorId/availability?date=2026-10-07",
+              "host": ["{{baseUrl}}"],
+              "path": ["doctors", ":doctorId", "availability"],
+              "query": [
+                { "key": "date", "value": "2026-10-07", "description": "YYYY-MM-DD" }
+              ],
+              "variable": [{ "key": "doctorId", "value": "" }]
+            }
+          }
+        },
+        {
+          "name": "My schedule (doctor)",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"workingSchedule\": {\n    \"sunday\": [{\"start\": \"08:00\", \"end\": \"18:00\"}],\n    \"monday\": [{\"start\": \"08:00\", \"end\": \"18:00\"}],\n    \"tuesday\": [{\"start\": \"08:00\", \"end\": \"18:00\"}],\n    \"wednesday\": [{\"start\": \"08:00\", \"end\": \"18:00\"}],\n    \"thursday\": [{\"start\": \"08:00\", \"end\": \"18:00\"}],\n    \"friday\": [{\"start\": \"08:00\", \"end\": \"18:00\"}],\n    \"saturday\": [{\"start\": \"08:00\", \"end\": \"14:00\"}]\n  }\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/doctors/me/schedule", "host": ["{{baseUrl}}"], "path": ["doctors", "me", "schedule"] }
+          }
+        },
+        {
+          "name": "List clinics",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/clinics", "host": ["{{baseUrl}}"], "path": ["clinics"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Appointments",
+      "item": [
+        {
+          "name": "Book appointment",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"doctorId\": \"<doctorId from list>\",\n  \"date\": \"2026-10-07\",\n  \"startTime\": \"09:00\",\n  \"note\": \"First visit\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/appointments", "host": ["{{baseUrl}}"], "path": ["appointments"] },
+            "event": [
+              {
+                "listen": "test",
+                "script": {
+                  "exec": [
+                    "const json = pm.response.json();",
+                    "if (json.data && json.data.id) pm.collectionVariables.set('appointmentId', json.data.id);"
+                  ],
+                  "type": "text/javascript"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "name": "My appointments",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/appointments/mine", "host": ["{{baseUrl}}"], "path": ["appointments", "mine"] }
+          }
+        },
+        {
+          "name": "Appointment detail",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/appointments/{{appointmentId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["appointments", "{{appointmentId}}"]
+            }
+          }
+        },
+        {
+          "name": "Get QR ticket",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/appointments/mine/{{appointmentId}}/ticket",
+              "host": ["{{baseUrl}}"],
+              "path": ["appointments", "mine", "{{appointmentId}}", "ticket"]
+            },
+            "event": [
+              {
+                "listen": "test",
+                "script": {
+                  "exec": [
+                    "const json = pm.response.json();",
+                    "if (json.data && json.data.token) pm.collectionVariables.set('ticket', json.data.token);"
+                  ],
+                  "type": "text/javascript"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "name": "Status + queue position",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/appointments/mine/{{appointmentId}}/status",
+              "host": ["{{baseUrl}}"],
+              "path": ["appointments", "mine", "{{appointmentId}}", "status"]
+            }
+          }
+        },
+        {
+          "name": "Cancel appointment",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"reason\": \"Changed my mind\"\n}" },
+            "url": {
+              "raw": "{{baseUrl}}/appointments/{{appointmentId}}/cancel",
+              "host": ["{{baseUrl}}"],
+              "path": ["appointments", "{{appointmentId}}", "cancel"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Payments",
+      "item": [
+        {
+          "name": "Pay for appointment",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"paymentMethod\": \"card\"\n}" },
+            "url": {
+              "raw": "{{baseUrl}}/payments/{{appointmentId}}/pay",
+              "host": ["{{baseUrl}}"],
+              "path": ["payments", "{{appointmentId}}", "pay"]
+            },
+            "event": [
+              {
+                "listen": "test",
+                "script": {
+                  "exec": [
+                    "const json = pm.response.json();",
+                    "if (json.data && json.data.ticket && json.data.ticket.token) pm.collectionVariables.set('ticket', json.data.ticket.token);"
+                  ],
+                  "type": "text/javascript"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "name": "Pay - simulate failure",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "X-Simulate-Payment", "value": "failure" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"paymentMethod\": \"card\"\n}" },
+            "url": {
+              "raw": "{{baseUrl}}/payments/{{appointmentId}}/pay",
+              "host": ["{{baseUrl}}"],
+              "path": ["payments", "{{appointmentId}}", "pay"]
+            }
+          }
+        },
+        {
+          "name": "My payments",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/payments/mine", "host": ["{{baseUrl}}"], "path": ["payments", "mine"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Check-in",
+      "item": [
+        {
+          "name": "Staff check-in (scan ticket)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"token\": \"{{ticket}}\"\n}" },
+            "url": { "raw": "{{baseUrl}}/check-ins", "host": ["{{baseUrl}}"], "path": ["check-ins"] }
+          }
+        },
+        {
+          "name": "Patient self check-in",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"token\": \"{{ticket}}\"\n}" },
+            "url": { "raw": "{{baseUrl}}/check-ins/self", "host": ["{{baseUrl}}"], "path": ["check-ins", "self"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Queue",
+      "item": [
+        {
+          "name": "Live queue",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/queue", "host": ["{{baseUrl}}"], "path": ["queue"] }
+          }
+        },
+        {
+          "name": "Today view",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/queue/today", "host": ["{{baseUrl}}"], "path": ["queue", "today"] }
+          }
+        },
+        {
+          "name": "My schedule (doctor)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/queue/my-schedule?days=7", "host": ["{{baseUrl}}"], "path": ["queue", "my-schedule"] }
+          }
+        },
+        {
+          "name": "Start consultation",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/queue/{{appointmentId}}/start",
+              "host": ["{{baseUrl}}"],
+              "path": ["queue", "{{appointmentId}}", "start"]
+            }
+          }
+        },
+        {
+          "name": "Complete consultation",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/queue/{{appointmentId}}/complete",
+              "host": ["{{baseUrl}}"],
+              "path": ["queue", "{{appointmentId}}", "complete"]
+            }
+          }
+        },
+        {
+          "name": "Mark no-show",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"reason\": \"Did not arrive\"\n}" },
+            "url": {
+              "raw": "{{baseUrl}}/queue/{{appointmentId}}/no-show",
+              "host": ["{{baseUrl}}"],
+              "path": ["queue", "{{appointmentId}}", "no-show"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin",
+      "item": [
+        {
+          "name": "Stats",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/admin/stats", "host": ["{{baseUrl}}"], "path": ["admin", "stats"] }
+          }
+        },
+        {
+          "name": "List users",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/admin/users", "host": ["{{baseUrl}}"], "path": ["admin", "users"] }
+          }
+        },
+        {
+          "name": "Set user active status",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"isActive\": false\n}" },
+            "url": {
+              "raw": "{{baseUrl}}/admin/users/:id/status",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "users", ":id", "status"],
+              "variable": [{ "key": "id", "value": "" }]
+            }
+          }
+        },
+        {
+          "name": "Create clinic",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Nasr City Clinic\",\n  \"address\": \"42 Abbas El Akkad, Nasr City, Cairo\",\n  \"phone\": \"+20 2 240 0000\",\n  \"email\": \"info@nasrcity.shifa.test\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/admin/clinics", "host": ["{{baseUrl}}"], "path": ["admin", "clinics"] }
+          }
+        },
+        {
+          "name": "Create doctor",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Hany Aziz\",\n  \"email\": \"hany.aziz@shifa.test\",\n  \"password\": \"Passw0rd!23\",\n  \"phone\": \"+20 100 555 7777\",\n  \"clinicId\": \"<clinicId>\",\n  \"specialty\": \"Ophthalmology\",\n  \"consultationFee\": 450,\n  \"currency\": \"EGP\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/admin/doctors", "host": ["{{baseUrl}}"], "path": ["admin", "doctors"] }
+          }
+        },
+        {
+          "name": "List appointments (clinic)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/admin/appointments", "host": ["{{baseUrl}}"], "path": ["admin", "appointments"] }
+          }
+        },
+        {
+          "name": "List payments (clinic)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/admin/payments", "host": ["{{baseUrl}}"], "path": ["admin", "payments"] }
+          }
+        }
+      ]
+    }
+  ]
+}

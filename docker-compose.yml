@@ -1,0 +1,50 @@
+# ---------------------------------------------------------------------------
+# Shifa API + MongoDB, for local development.
+#
+#   docker compose up -d mongo      # database only
+#   docker compose up --build       # database + API
+#
+# The service reads environment from `.env` (copy `.env.example` first).
+# `server.js` waits for MongoDB to accept connections with a readiness retry,
+# so no healthcheck choreography is required between the two containers.
+# ---------------------------------------------------------------------------
+
+services:
+  mongo:
+    image: mongo:7
+    container_name: shifa-mongo
+    restart: unless-stopped
+    ports:
+      # Host 27018 -> container 27017, so it never collides with any other
+      # local MongoDB (e.g. projects that already use 127.0.0.1:27017).
+      - "27018:27017"
+    volumes:
+      - shifa_mongo_data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+
+  api:
+    build: .
+    container_name: shifa-api
+    restart: unless-stopped
+    depends_on:
+      mongo:
+        condition: service_healthy
+    ports:
+      - "4000:4000"
+    env_file:
+      - .env
+    environment:
+      NODE_ENV: production
+      MONGO_URI: mongodb://mongo:27017/shifa
+    volumes:
+      # Dev convenience: mount the source so JS changes take effect on restart.
+      - ./src:/app/src:ro
+      - ./server.js:/app/server.js:ro
+
+volumes:
+  shifa_mongo_data:

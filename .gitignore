@@ -1,0 +1,21 @@
+node_modules/
+coverage/
+dist/
+build/
+logs/
+*.log
+npm-debug.log*
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# Editors / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Misc
+.postman_collection.json.tmp
